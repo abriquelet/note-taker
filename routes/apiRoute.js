@@ -1,28 +1,32 @@
+//packages/dependencies
 const express = require('express');
 const app = express();
 const path = require('path');
 const fs = require('fs');
-const uniqid = require('uniqid'); 
-
-const PORT = process.env.PORT || 3000;
+//port, env for user env.
+const PORT = process.env.PORT || 3009;
 const dataStorage = path.join(__dirname, 'Develop', 'db', 'db.json');
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'Develop', 'public')));
-
-// Define routes
-app.get('/', function(req, res) {
-    // Serve index.html
-    res.sendFile(path.join(__dirname, 'Develop', 'public', 'index.html'));
+app.use(function(req, res, next) {
+    if (req.url.endsWith('.js')) {
+        res.set('Content-Type', 'text/javascript');
+    }
+    next();
 });
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.get('/', function(req, res) { 
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+  
 app.get('/notes', function(req, res) {
-    // Serve notes.html
-    res.sendFile(path.join(__dirname, 'Develop', 'public', 'notes.html'));
+    res.sendFile(path.join(__dirname, 'public', 'notes.html'));
 });
 
 app.get('/api/notes', function(req, res) {
-    // Read notes from db.json and send as JSON response
     fs.readFile(dataStorage, 'utf8', function(err, data) {
         if (err) {
             console.error(err);
@@ -34,15 +38,12 @@ app.get('/api/notes', function(req, res) {
 });
 
 app.post('/api/notes', function(req, res) {
-    // Handle post request to add a new note
-    const title = req.body.title;
-    const text = req.body.text;
-    
+    const { title, text } = req.body;
     if (title && text) {
         const newNote = {
             title: title,
             text: text,
-            id: uniqid(), // Use uniqid to generate a unique ID
+            id: Date.now(), 
         };
 
         fs.readFile(dataStorage, 'utf8', function(err, data) {
@@ -75,4 +76,3 @@ app.post('/api/notes', function(req, res) {
 
 app.listen(PORT, function () {
     console.log(`Example app listening at http://localhost:${PORT}`);
-});

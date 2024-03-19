@@ -1,19 +1,22 @@
-// packages
-const path = require('path');
+//packages/dependencies
+const express = require('express');
 const app = express();
-//port
-const PORT = 3004;
-//route variables
-const apiRoute = require('Develop\routes\apiRoute.js');
-const htmlRoute = require('Develop\routes\htmlRoute.js');
-//middleware 
-app.use(express.static('public'));
+//port, env for user env.
+const PORT = process.env.PORT || 3009;
 
-//routes
+//link routes to server
 
-//listen() to check for incoming connections using the port you specified prior. 
-app.listen(PORT, () =>
-  console.log(`Example app listening at http://localhost:${PORT}`)
-);
+const htmlRoute = require('routes\htmlRoute.js');
+const apiRoute = require('routes\apiRoute.js');
 
+//middleware
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(apiRoute);
+app.use(htmlRoute);
+
+app.listen(PORT, function () {
+    console.log(`Example app listening at http://localhost:${PORT}`);
+});
